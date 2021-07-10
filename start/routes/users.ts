@@ -11,69 +11,60 @@ Route.post('/api/users', async ({ request, response }) => {
     yearOfBirth: schema.number([ rules.range(0, (new Date()).getFullYear() + 1) ]),
   })
 
-
-  let payload
   try {
-    payload = await request.validate({
+    const payload = await request.validate({
       schema: bodySchema
     })
-  } catch (error) {
-    response.badRequest(error.messages)
-    return
-  }
 
-  const { name, email, yearOfBirth } = payload
-  try {
-    await Database
+    const { name, email, yearOfBirth } = payload
+    const [userId] : [number] = await Database
       .table('users')
       .insert({
         name,
         email,
         year_of_birth: yearOfBirth
       })
+
+    return `user ${JSON.stringify({
+      id: userId,
+      name,
+      email,
+      yearOfBirth
+    })} created`
   } catch (e) {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
   }
-  return `user ${JSON.stringify({
-    name,
-    email,
-    year_of_birth: yearOfBirth
-  })} created`
 })
 
 // del user route
 Route.delete('/api/users/:id', async ({ response, params }) => {
-  if (isNaN(parseInt(params.id))) {
-    response.badRequest('Parameter "id" is not a number!')
-    return
-  }
 
   try {
-    await Database
+    const deleteCount = await Database
       .from('users')
       .where('id', parseInt(params.id))
       .delete()
+    return Number(deleteCount) > 0
+      ? `user with id=${params.id} deleted`
+      : `user with id=${params.id} not found`
   } catch (e) {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
   }
-
-  return { route: 'del user route' }
-})
+}).where('id', /^[0-9]+$/)
 
 // get users list route
 Route.get('/api/users/:id?', async ({ response, params }) => {
   try {
     const query = Database
       .from('users')
-      .select('*')
+      .select('id', 'name', 'email', 'year_of_birth as yearOfBirth')
 
-      if (params.id && !isNaN(parseInt(params.id))) {
-        query.where('id', params.id)
+      if (params.id) {
+        query.where('id', parseInt(params.id))
       }
 
-      return query
+    return query
   } catch (e) {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
   }
-  return 'user created'
-})
+}).where('id', /^[0-9]+$/)
