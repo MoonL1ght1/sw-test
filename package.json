@@ -5,7 +5,9 @@
   "scripts": {
     "build": "node ace build --production",
     "start": "node server.js",
-    "dev": "node ace serve --watch"
+    "dev": "node ace serve --watch",
+    "db:up": "docker-compose pull && docker-compose up -d",
+    "db:down": "docker-compose down"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.0.0",
