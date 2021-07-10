@@ -46,7 +46,7 @@ Route.delete('/api/users/:id', async ({ response, params }) => {
       .delete()
     return Number(deleteCount) > 0
       ? `user with id=${params.id} deleted`
-      : `user with id=${params.id} not found`
+      : response.badRequest(`song with id=${params.id} not found`)
   } catch (e) {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
   }

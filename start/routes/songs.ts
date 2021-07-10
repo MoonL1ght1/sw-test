@@ -57,7 +57,7 @@ Route.delete('/api/songs/:id', async ({ response, params }) => {
       .delete()
 
       return Number(deleteCount) > 0
-        ? { deleteCount: Number(deleteCount)}
+        ? `song with id=${params.id} deleted`
         : response.badRequest(`song with id=${params.id} not found`)
   } catch (e) {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
@@ -69,10 +69,7 @@ Route.get('/api/songs/:id?', async ({ response, params }) => {
   try {
     const query = Database
       .from('songs')
-      .rightJoin('song_ratings', 'songs.id', 'song_ratings.song_id')
-      .groupBy('songs.id', 'songs.artist', 'songs.song_title')
-      .select('songs.id', 'songs.artist', 'songs.song_title as songTitle')
-      .avg('song_ratings.rating as avgRating')
+      .select('id', 'artist', 'song_title as songTitle')
 
       if (params.id) {
         query.where('id', parseInt(params.id))
@@ -84,7 +81,26 @@ Route.get('/api/songs/:id?', async ({ response, params }) => {
   }
 }).where('id', /^[0-9]+$/)
 
-// todo: стоит реализовать для проставления рейтинга для уже существующих песен
+// get songs with avg Rating
+Route.get('/api/songs/withRatings', async ({ response, params }) => {
+  try {
+    const query = Database
+      .from('songs')
+      .rightJoin('song_ratings', 'songs.id', 'song_ratings.song_id')
+      .groupBy('songs.id', 'songs.artist', 'songs.song_title')
+      .select('songs.id', 'songs.artist', 'songs.song_title as songTitle')
+      .avg('song_ratings.rating as avgRating')
+
+      if (params.id) {
+        query.where('songs.id', parseInt(params.id))
+      }
+
+    return query
+  } catch (e) {
+    response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
+  }
+}).where('id', /^[0-9]+$/)
+
 Route.post('/api/songs/addRating', async ({ request, response }) => {
   const bodySchema = schema.create({
     songId: schema.number([ rules.unsigned() ]),
@@ -127,8 +143,6 @@ Route.post('/api/songs/addRating', async ({ request, response }) => {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
   }
 })
-// todo: стоит реализовать на случай изменения предпочтений или ошибочной оценки
-// Route.post('/api/songs/changeRating', async () => {})
 
 Route.get('/api/songs/artistRating/:artist?', async ({ response, params }) => {
   try {
