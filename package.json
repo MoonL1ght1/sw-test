@@ -9,7 +9,8 @@
     "db:up": "docker-compose pull && docker-compose up -d",
     "db:down": "docker-compose down",
     "migration:run": "node ace migration:run",
-    "migration:rollback": "node ace migration:rollback"
+    "migration:rollback": "node ace migration:rollback",
+    "test": "node -r @adonisjs/assembler/build/register japaFile.ts"
   },
   "devDependencies": {
     "@adonisjs/assembler": "^5.0.0",
