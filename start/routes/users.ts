@@ -25,12 +25,12 @@ Route.post('/api/users', async ({ request, response }) => {
         year_of_birth: yearOfBirth
       })
 
-    return `user ${JSON.stringify({
+    return {
       id: userId,
       name,
       email,
       yearOfBirth
-    })} created`
+    }
   } catch (e) {
     response.status(500).send(`Error occured: ${JSON.stringify(e, null, ' ')}`)
   }
