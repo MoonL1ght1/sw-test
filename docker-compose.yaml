@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0.22
+    command: --default-authentication-plugin=mysql_native_password --wait_timeout=864000
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: app
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - 3306:3306
